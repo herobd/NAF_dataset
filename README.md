@@ -45,9 +45,9 @@ The tools used to annotate can be found here: <https://github.com/herobd/formlab
 The jsons have the following information:
 
 * `imageFilename`: the image name this json corresponds to
-* width & `height`: size of the original image (here for convienence)
-* fieldBBs & `textBBs`: list of field/text bounding box objects
-  * These objects `have`:
+* `width` & `height`: size of the original image (here for convienence)
+* `fieldBBs` & `textBBs`: list of field/text bounding box objects
+  * These objects have:
     * `poly_points`: list of [x,y] pairs, the box corners going top-left,top-right,bottom-right,bottom-left (they aren't restricted to be a rectangle!)
     * `type`: one of [`text`,`textP`,`textMinor`,`textInst`,`textNumber`,`fieldCircle`,`field`,`fieldP`,`fieldCheckBox`,`graphic`,`comment`,`fieldRegion`,`fieldCol`,`fieldRow`]
     * `id`: unique id that is either "f#" or "t#" depending if it is a field or text
