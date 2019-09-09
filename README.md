@@ -3,14 +3,14 @@
 This dataset was created with images provided by the United States National Archive and FamilySearch.
 
 This was released in conjunction with the paper "Deep Visual Template-Free Form Parsing":
-* Paper: 
+* Paper: http://arxiv.org/abs/1909.02576
 * Code: https://github.com/herobd/Visual-Template-Free-Form-Parsing
 
 
 ![Annotated image from dataset](/ex_images/ex_dataset.png)
 
 ## Setup
-1. Download labeled_images.tar.gz from the Github release and put it in the dataset directory root.
+1. Download `labeled_images.tar.gz` from the Github release and put it in the dataset directory root.
 2. Run: `./move_images.sh`  (This extracts the images and puts them in the right group directory.)
 
 The configutation files for the "Deep Visual Template-Free Form Parsing" code expects this directory to be nested in a `data` directory at the same level as the repo directory.
