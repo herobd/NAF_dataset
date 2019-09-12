@@ -9,6 +9,11 @@ This was released in conjunction with the paper "Deep Visual Template-Free Form 
 
 ![Annotated image from dataset](/ex_images/ex_dataset.png)
 
+## Data distribution
+![Data distriburion](/ex_images/naf_table.png)
+
+"Simple" refers to the section of the data used in our paper for pairing.
+
 ## Setup
 1. Download `labeled_images.tar.gz` from the Github release and put it in the dataset directory root.
 2. Run: `./move_images.sh`  (This extracts the images and puts them in the right group directory.)
