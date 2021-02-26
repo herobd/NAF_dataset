@@ -8,38 +8,53 @@ import numpy as np
 DEBUG=False
 
 def fixBox(ann,group,imagename):
-    points=ann['poly_points']
-    image = mpimg.imread(os.path.join('groups',group,imagename+'.jpg'))
-    fig = plt.figure()
-    gs = gridspec.GridSpec(1, 1)
-    ax_im = plt.subplot(gs[0])
-    ax_im.imshow(image,cmap='gray')
-    box = patches.Polygon(np.array(points),linewidth=2,edgecolor='r',facecolor='none')
-    ax_im.add_patch(box)
-    plt.show()
+    #points=ann['poly_points']
+    #image = mpimg.imread(os.path.join('groups',group,imagename+'.jpg'))
+    #fig = plt.figure()
+    #gs = gridspec.GridSpec(1, 1)
+    #ax_im = plt.subplot(gs[0])
+    #ax_im.imshow(image,cmap='gray')
+    #box = patches.Polygon(np.array(points),linewidth=2,edgecolor='r',facecolor='none')
+    #ax_im.add_patch(box)
+    #plt.show()
     trans = input('trans? (¦): ')
     return ann, trans
 
 with open(sys.argv[1]) as f:
-    reader = csv.reader(f,delimiter=',',quotechar='"')
     head=None
     json_path=None
     cur_json_path=None
-    for row in reader:
-        if head is None:
-            head = {v:i for i,v in enumerate(row)}
-            continue
-        
-        csvId = row[head['id']]
-        group,image,bbId = csvId.split('-')
-        trans = row[head['Transcription']]
+    data=[]
+    if sys.argv[1].endswith('.csv'):
+        reader = csv.reader(f,delimiter=',',quotechar='"')
+        for ri,row in enumerate(reader):
+            if head is None:
+                head = {v:i for i,v in enumerate(row)}
+                continue
+            
+            csvId = row[head['id']] if 'id' in head else row[head['ID']]
+            trans = row[head['Transcription']]
 
+            empty = 'FALSE'!=row[head['empty']] if 'empty' in head else False
+            bad_crop = 'FALSE'!=row[head['bad crop']] if 'bad crop' in head else False
+            illegible = 'FALSE'!=row[head['illegible']] if 'illegible' in head else False
+
+        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']]))
+    elif sys.argv[1].endswith('.json'):
+        instances = json.load(f)
+        for i in instances:
+            data.append((i['id'],i['gt'],False,False,False,i['context_image']))
+
+    for csvId,trans,empty,bad_crop,illegible,image_name in data:
+        print(csvId)
+        group,image,bbId = csvId.split('-')
         json_path = os.path.join('groups',group,image+'.json')
         if json_path!=cur_json_path:
             if cur_json_path is not None:
                 json_data['fieldBBs']=list(fieldsById.values())
                 if DEBUG:
-                    with open('test/{}.json'.format(image),'w') as out:
+                    print('write {}'.format(cur_image))
+                    with open('test/{}.json'.format(cur_image),'w') as out:
                         json.dump(json_data,out)
                 else:
                     with open(cur_json_path,'w') as out:
@@ -52,11 +67,32 @@ with open(sys.argv[1]) as f:
             for fieldBB in json_data['fieldBBs']:
                 fieldsById[fieldBB['id']]=fieldBB
             cur_json_path=json_path
+            cur_image=image
 
         assert(not any([x in trans for x in "«»¿§"]))
         if bbId not in fieldsById:
             continue
 
+        if len(trans)==0:
+            if illegible:
+                trans = "§"
+            elif empty:
+                pass
+            elif bad_crop:
+                print('!!!')
+                print('bad_crop: {} {}'.format(csvId,image_name))
+                fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
+                trans=newtrans
+        elif illegible:
+            print('{} marked as illegible, but trans is : {}'.format(csvId,trans))
+        elif empty:
+            print('{} marked as empty, but has trans: {}'.format(csvId,trans))
+            trans = input('Correct: ')
+        elif bad_crop:
+            print('bad_crop: {} {}'.format(csvId,image_name))
+            print(' but had trans: {}'.format(trans))
+            fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
+            trans=newtrans
 
 
         while "\\" in trans and "'" in trans:
@@ -117,6 +153,16 @@ with open(sys.argv[1]) as f:
         while "\\" in trans:
             if "\\s[" in trans and "]" in trans:
                 newtrans = trans.replace("\\s[","«")
+                newtrans=newtrans.replace("]","»")
+                #print('Fix strikethrough: {} -> {}'.format(trans,newtrans))
+                trans=newtrans
+            elif "S\\[" in trans and "]" in trans:
+                newtrans = trans.replace("S\\[","«")
+                newtrans=newtrans.replace("]","»")
+                #print('Fix strikethrough: {} -> {}'.format(trans,newtrans))
+                trans=newtrans
+            elif "s\\[" in trans and "]" in trans:
+                newtrans = trans.replace("s\\[","«")
                 newtrans=newtrans.replace("]","»")
                 #print('Fix strikethrough: {} -> {}'.format(trans,newtrans))
                 trans=newtrans
