@@ -21,26 +21,33 @@ def fixBox(ann,group,imagename):
     return ann, trans
 
 with open(sys.argv[1]) as f:
-    reader = csv.reader(f,delimiter=',',quotechar='"')
     head=None
     json_path=None
     cur_json_path=None
-    for ri,row in enumerate(reader):
-        if head is None:
-            head = {v:i for i,v in enumerate(row)}
-            continue
-        print('{}/{}'.format(ri,12838))
-        
-        csvId = row[head['id']] if 'id' in head else row[head['ID']]
+    data=[]
+    if sys.argv[1].endswith('.csv'):
+        reader = csv.reader(f,delimiter=',',quotechar='"')
+        for ri,row in enumerate(reader):
+            if head is None:
+                head = {v:i for i,v in enumerate(row)}
+                continue
+            
+            csvId = row[head['id']] if 'id' in head else row[head['ID']]
+            trans = row[head['Transcription']]
+
+            empty = 'FALSE'!=row[head['empty']] if 'empty' in head else False
+            bad_crop = 'FALSE'!=row[head['bad crop']] if 'bad crop' in head else False
+            illegible = 'FALSE'!=row[head['illegible']] if 'illegible' in head else False
+
+        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']]))
+    elif sys.argv[1].endswith('.json'):
+        instances = json.load(f)
+        for i in instances:
+            data.append((i['id'],i['gt'],False,False,False,i['context_image']))
+
+    for csvId,trans,empty,bad_crop,illegible,image_name in data:
         print(csvId)
         group,image,bbId = csvId.split('-')
-        trans = row[head['Transcription']]
-
-        empty = 'FALSE'!=row[head['empty']] if 'empty' in head else False
-        bad_crop = 'FALSE'!=row[head['bad crop']] if 'bad crop' in head else False
-        illegible = 'FALSE'!=row[head['illegible']] if 'illegible' in head else False
-
-
         json_path = os.path.join('groups',group,image+'.json')
         if json_path!=cur_json_path:
             if cur_json_path is not None:
@@ -73,7 +80,7 @@ with open(sys.argv[1]) as f:
                 pass
             elif bad_crop:
                 print('!!!')
-                print('bad_crop: {} {}'.format(csvId,row[head['image']]))
+                print('bad_crop: {} {}'.format(csvId,image_name))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
         elif illegible:
@@ -82,7 +89,7 @@ with open(sys.argv[1]) as f:
             print('{} marked as empty, but has trans: {}'.format(csvId,trans))
             trans = input('Correct: ')
         elif bad_crop:
-            print('bad_crop: {} {}'.format(csvId,row[head['image']]))
+            print('bad_crop: {} {}'.format(csvId,image_name))
             print(' but had trans: {}'.format(trans))
             fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
             trans=newtrans
