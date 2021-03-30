@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 from matplotlib import gridspec
 import numpy as np
 
-DEBUG=True
+DEBUG=False
 
 def fixBox(ann,group,imagename):
     #points=ann['poly_points']
