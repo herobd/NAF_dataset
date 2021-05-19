@@ -1,18 +1,26 @@
 # National Archives Forms Dataset
 
+VERSION 2
+* Corrections to various annotation errors.
+* Test/Valid transcption added
+* Train handwriting transcription added (though noisy)
+
 This dataset was created with images provided by the United States National Archive and FamilySearch.
 
-This was released in conjunction with the paper "Deep Visual Template-Free Form Parsing":
+This was released (v1) in conjunction with the paper "Deep Visual Template-Free Form Parsing":
 * Paper: http://arxiv.org/abs/1909.02576
 * Code: https://github.com/herobd/Visual-Template-Free-Form-Parsing
+
+Version 2 was used for "Visual FUDGE: Form Understanding via Graph Editing" http://arxiv.org/abs/2105.08194 (just the corrections, not the transcriptions).
 
 
 ![Annotated image from dataset](/ex_images/ex_dataset.png)
 
 ## Data distribution
+THESE ARE NOT RIGHT FOR VERSION 2. But they should give you a good idea of what it looks like. The full dataset in v2 has 708 training, 75 validation, and 77 test set images.
 ![Data distriburion](/ex_images/naf_table.png)
 
-"Simple" refers to the section of the data used in our paper for pairing.
+"Simple" refers to the section of the data used in "Deep Visual Template-Free Form Parsing". FUDGE used all of it.
 
 ## Setup
 1. Download `labeled_images.tar.gz` from the Github release and put it in the dataset directory root.
@@ -36,7 +44,7 @@ I am releasing the images used with our paper "Deep Visual Template-Free Form Pa
 
 
 The goal of this data is to capture relationships between text/handwriting entities on form images.
-It will include transcriptions in the future, but doesn't currently.
+The transcription GT has been partial added (printed text on the training set is missing). Unfortunately there isn't a plan to add any more.
 
 The form images are organized into "groups", each group containing images of the same form type.
 I tried to be picky in keeping forms seperate that contain even one different field, but it really is an estimate that was intended to speed up annotation.
@@ -64,6 +72,7 @@ The jsons have the following information:
       * `4`: signature
 * `pairs`: list of id tuples of relationships between text and field boxes
 * `samePairs`: list of id tuples of relationships between text and text or field and field
+* `transcriptions`: (NEW) dictionary of BB ids to their string transcription (see below for special characters).
 * `actualPage_corners`: cordinates of phyisical page corners
 * `page_corners`: cordinates of corners if the page where actually a polygon (e.g. not ripped corners)
 * `horzLinks`: list of "horizontal lines", each horizontal line being a list of ids of boxes that all form a horizontal line not broken by dividing lines or gaps.
@@ -85,6 +94,12 @@ The types have the following meaning:
 * `fieldRegion`: Used if there are multiple documents in an image to denote the different images. Also done with repeated records.
 * `fieldCol`: A column of a table, captures the entire column. Individual cells are not annotated.
 * `fieldRow`: A row of a table.
+
+Some special characters are used in the transcription:
+* "«text»" indicates that "text" had a strikethrough
+* "¿" indicates the transcriber could not read a character
+* "§" indicates the whole line or word was illegible
+* "" (empty string) is if the field was blank
 
 ## Citing
 
