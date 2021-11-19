@@ -23,7 +23,7 @@ THESE ARE NOT RIGHT FOR VERSION 2. But they should give you a good idea of what 
 "Simple" refers to the section of the data used in "Deep Visual Template-Free Form Parsing". FUDGE used all of it.
 
 ## Setup
-1. Download `labeled_images.tar.gz` from the Github release and put it in the dataset directory root.
+1. Download `labeled_images.tar.gz` from the Github [release](https://github.com/herobd/NAF_dataset/releases/tag/v1.0) and put it in the dataset directory root.
 2. Run: `./move_images.sh`  (This extracts the images and puts them in the right group directory.)
 
 The configutation files for the "Deep Visual Template-Free Form Parsing" code expects this directory to be nested in a `data` directory at the same level as the repo directory.
