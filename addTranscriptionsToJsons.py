@@ -5,7 +5,9 @@ import matplotlib.patches as patches
 from matplotlib import gridspec
 import numpy as np
 
-DEBUG=False
+DEBUG=True
+if DEBUG:
+    print('DEBUG')
 
 def fixBox(ann,group,imagename):
     #points=ann['poly_points']
@@ -43,7 +45,11 @@ with open(sys.argv[1]) as f:
     elif sys.argv[1].endswith('.json'):
         instances = json.load(f)
         for i in instances:
-            data.append((i['id'],i['gt'],False,False,False,i['context_image']))
+            data.append((
+                i['id'],
+                i['gt'],
+                False,False,False,
+                i['context_image']))
 
     for csvId,trans,empty,bad_crop,illegible,image_name in data:
         print(csvId)
@@ -188,8 +194,14 @@ with open(sys.argv[1]) as f:
                 trans = input('Correct: ')
         
         if bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
-            print('trans descrip: {} != {}'.format(prevTrans[bbId],trans))
-            trans = input('Correct: ')
+            print('Different transcription. Prev: {} != New: {}'.format(json_data['transcriptions'][bbId],trans))
+            if json_data['transcriptions'][bbId]!='' and trans!='':
+                new_trans = input('Enter correct (leave blank to accept new): ')
+                if new_trans!='':
+                    trans=new_trans
+            else:
+                trans = input('Enter correct: ')
+
         json_data['transcriptions'][bbId]=trans
 
 
