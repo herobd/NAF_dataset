@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 from matplotlib import gridspec
 import numpy as np
 
-DEBUG=True
+DEBUG=False
 if DEBUG:
     print('DEBUG')
 
@@ -41,23 +41,28 @@ with open(sys.argv[1]) as f:
             bad_crop = 'FALSE'!=row[head['bad crop']] if 'bad crop' in head else False
             illegible = 'FALSE'!=row[head['illegible']] if 'illegible' in head else False
 
-        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']]))
+        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']],True))
     elif sys.argv[1].endswith('.json'):
         instances = json.load(f)
         for i in instances:
             if 'id' in i and 'gt' in i:
-                data.append((i['id'],i['gt'],False,False,False,i['context_image']))
+                data.append((i['id'],i['gt'],False,False,False,i['context_image'],True))
             elif 'gt' in i and 'matches' in i:
                 for csv_id in i['matches']:
-                    data.append((csv_id,i['gt'],False,False,False,i['image']))
+                    data.append((csv_id,i['gt'],False,False,False,i['image'],True))
+            elif 'pred' in i and 'matches' in i:
+                for csv_id in i['matches']:
+                    data.append((csv_id,i['pred'],False,False,False,i['image'],False))
 
-    for csvId,trans,empty,bad_crop,illegible,image_name in data:
+    for csvId,trans,empty,bad_crop,illegible,image_name,corrected in data:
         print(csvId)
         group,image,bbId = csvId.split('-')
         json_path = os.path.join('groups',group,image+'.json')
         if json_path!=cur_json_path:
             if cur_json_path is not None:
                 #json_data['fieldBBs']=list(fieldsById.values())
+                if len(json_data['raw tesseract transcriptions'])==0:
+                    del json_data['raw tesseract transcriptions']
                 if DEBUG:
                     print('write {}'.format(cur_image))
                     with open('test/{}.json'.format(cur_image),'w') as out:
@@ -69,6 +74,8 @@ with open(sys.argv[1]) as f:
                 json_data = json.load(j)
             if 'transcriptions' not in json_data:
                 json_data['transcriptions']={}
+            if 'raw tesseract transcription' not in json_data:
+                json_data['raw tesseract transcriptions']=[]
             fieldsById={}
             for fieldBB in json_data['fieldBBs']:
                 fieldsById[fieldBB['id']]=fieldBB
@@ -196,17 +203,27 @@ with open(sys.argv[1]) as f:
             else:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
-        
-        if bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
-            print('Different transcription. Prev: {} != New: {}'.format(json_data['transcriptions'][bbId],trans))
-            if json_data['transcriptions'][bbId]!='' and trans!='':
-                new_trans = input('Enter correct (leave blank to accept new): ')
-                if new_trans!='':
-                    trans=new_trans
+        if bbId not in json_data['raw tesseract transcriptions'] and bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
+            if not corrected:
+                trans = json_data['transcriptions'][bbId]
+                corrected=True
             else:
-                trans = input('Enter correct: ')
+                print('Different transcription. Prev: {} != New: {}'.format(json_data['transcriptions'][bbId],trans))
+                if json_data['transcriptions'][bbId]!='' and trans!='':
+                    new_trans = input('Enter correct (leave blank to accept new): ')
+                    if new_trans!='':
+                        trans=new_trans
+                else:
+                    trans = input('Enter correct: ')
 
         json_data['transcriptions'][bbId]=trans
+        if not corrected:
+            json_data['raw tesseract transcriptions'].append(bbId)
+        else:
+            try:
+                json_data['raw tesseract transcriptions'].remove(bbId)
+            except ValueError:
+                pass
         #print('{} : {}'.format(bbId,trans))
 
 
