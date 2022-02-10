@@ -45,11 +45,11 @@ with open(sys.argv[1]) as f:
     elif sys.argv[1].endswith('.json'):
         instances = json.load(f)
         for i in instances:
-            data.append((
-                i['id'],
-                i['gt'],
-                False,False,False,
-                i['context_image']))
+            if 'id' in i and 'gt' in i:
+                data.append((i['id'],i['gt'],False,False,False,i['context_image']))
+            elif 'gt' in i and 'matches' in i:
+                for csv_id in i['matches']:
+                    data.append((csv_id,i['gt'],False,False,False,i['image']))
 
     for csvId,trans,empty,bad_crop,illegible,image_name in data:
         print(csvId)
@@ -57,7 +57,7 @@ with open(sys.argv[1]) as f:
         json_path = os.path.join('groups',group,image+'.json')
         if json_path!=cur_json_path:
             if cur_json_path is not None:
-                json_data['fieldBBs']=list(fieldsById.values())
+                #json_data['fieldBBs']=list(fieldsById.values())
                 if DEBUG:
                     print('write {}'.format(cur_image))
                     with open('test/{}.json'.format(cur_image),'w') as out:
@@ -72,11 +72,15 @@ with open(sys.argv[1]) as f:
             fieldsById={}
             for fieldBB in json_data['fieldBBs']:
                 fieldsById[fieldBB['id']]=fieldBB
+            textById={}
+            for textBB in json_data['textBBs']:
+                textById[textBB['id']]=textBB
             cur_json_path=json_path
             cur_image=image
 
         assert(not any([x in trans for x in "«»¿§"]))
-        if bbId not in fieldsById:
+        if bbId not in fieldsById and bbId not in textById:
+            import pdb;pdb.set_trace()
             continue
 
         if len(trans)==0:
@@ -203,9 +207,10 @@ with open(sys.argv[1]) as f:
                 trans = input('Enter correct: ')
 
         json_data['transcriptions'][bbId]=trans
+        #print('{} : {}'.format(bbId,trans))
 
 
-    json_data['fieldBBs']=list(fieldsById.values())
+    #json_data['fieldBBs']=list(fieldsById.values())
     if DEBUG:
         with open('test/{}.json'.format(image),'w') as out:
             json.dump(json_data,out)
