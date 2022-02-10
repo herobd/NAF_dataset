@@ -61,7 +61,7 @@ with open(sys.argv[1]) as f:
         if json_path!=cur_json_path:
             if cur_json_path is not None:
                 #json_data['fieldBBs']=list(fieldsById.values())
-                if len(json_data['raw tesseract transcriptions'])==0:
+                if 'raw tesseract transcriptions' in json_data:
                     del json_data['raw tesseract transcriptions']
                 if DEBUG:
                     print('write {}'.format(cur_image))
@@ -74,8 +74,6 @@ with open(sys.argv[1]) as f:
                 json_data = json.load(j)
             if 'transcriptions' not in json_data:
                 json_data['transcriptions']={}
-            if 'raw tesseract transcription' not in json_data:
-                json_data['raw tesseract transcriptions']=[]
             fieldsById={}
             for fieldBB in json_data['fieldBBs']:
                 fieldsById[fieldBB['id']]=fieldBB
@@ -207,7 +205,7 @@ with open(sys.argv[1]) as f:
             else:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
-        if bbId not in json_data['raw tesseract transcriptions'] and bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
+        if bbId[0]=='f' and bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
             if not corrected:
                 trans = json_data['transcriptions'][bbId]
                 corrected=True
@@ -219,15 +217,10 @@ with open(sys.argv[1]) as f:
                         trans=new_trans
                 else:
                     trans = input('Enter correct: ')
+        elif not corrected and bbId in json_data['transcriptions']:
+            continue
 
         json_data['transcriptions'][bbId]=trans
-        if not corrected:
-            json_data['raw tesseract transcriptions'].append(bbId)
-        else:
-            try:
-                json_data['raw tesseract transcriptions'].remove(bbId)
-            except ValueError:
-                pass
         #print('{} : {}'.format(bbId,trans))
 
 
