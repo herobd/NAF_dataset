@@ -87,7 +87,7 @@ with open(sys.argv[1]) as f:
 
         assert(not any([x in trans for x in "«»¿§"]))
         if bbId not in fieldsById and bbId not in textById:
-            import pdb;pdb.set_trace()
+            #import pdb;pdb.set_trace()
             continue
 
         if len(trans)==0:
@@ -162,6 +162,8 @@ with open(sys.argv[1]) as f:
                 print('BAD: {}'.format(csvId))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
+            elif not corrected:
+                trans=trans.replace('\\','')
             else:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
@@ -200,6 +202,8 @@ with open(sys.argv[1]) as f:
                 print('BAD: {}'.format(csvId))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
+            elif not corrected:
+                trans=trans.replace('\\','')
             else:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
