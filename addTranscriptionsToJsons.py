@@ -160,9 +160,11 @@ with open(sys.argv[1]) as f:
                 print('BAD: {}'.format(csvId))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
+            elif '\\\\' in trans:
+                trans=trans.replace('\\\\','\\')
             elif not corrected:
                 trans=trans.replace('\\','')
-            else:
+            elif ' \\' in trans:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
 
@@ -175,7 +177,7 @@ with open(sys.argv[1]) as f:
                 trans=newtrans
             elif "S\\[" in trans and "]" in trans:
                 newtrans = trans.replace("S\\[","«")
-                newtrans=newtrans.replace("]","»")
+                newtrans=newtrans.replace("]","»")trans=trans.replace('\\','')
                 #print('Fix strikethrough: {} -> {}'.format(trans,newtrans))
                 trans=newtrans
             elif "s\\[" in trans and "]" in trans:
@@ -200,11 +202,14 @@ with open(sys.argv[1]) as f:
                 print('BAD: {}'.format(csvId))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
+            elif '\\\\' in trans:
+                trans=trans.replace('\\\\','\\')
             elif not corrected:
                 trans=trans.replace('\\','')
-            else:
+            elif ' \\' in trans:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
+            #otherwise assuming it's a newline marker
         if bbId[0]=='f' and bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
             if not corrected:
                 trans = json_data['transcriptions'][bbId]
