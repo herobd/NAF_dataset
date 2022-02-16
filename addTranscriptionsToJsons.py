@@ -41,20 +41,20 @@ with open(sys.argv[1]) as f:
             bad_crop = 'FALSE'!=row[head['bad crop']] if 'bad crop' in head else False
             illegible = 'FALSE'!=row[head['illegible']] if 'illegible' in head else False
 
-        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']],True))
+        data.append((csvId,trans,empty,bad_crop,illegible,row[head['image']],True,False))
     elif sys.argv[1].endswith('.json'):
         instances = json.load(f)
         for i in instances:
             if 'id' in i and 'gt' in i:
-                data.append((i['id'],i['gt'],False,False,False,i['context_image'],True))
+                data.append((i['id'],i['gt'],False,False,False,i['context_image'],True,False))
             elif 'gt' in i and 'matches' in i:
                 for csv_id in i['matches']:
-                    data.append((csv_id,i['gt'],False,False,False,i['image'],True))
+                    data.append((csv_id,i['gt'],False,False,False,i['image'],True,len(i['matches'])>1))
             elif 'pred' in i and 'matches' in i:
                 for csv_id in i['matches']:
-                    data.append((csv_id,i['pred'],False,False,False,i['image'],False))
+                    data.append((csv_id,i['pred'],False,False,False,i['image'],False,False))
 
-    for csvId,trans,empty,bad_crop,illegible,image_name,corrected in data:
+    for csvId,trans,empty,bad_crop,illegible,image_name,corrected,no_strikethrough in data:
         print(csvId)
         group,image,bbId = csvId.split('-')
         json_path = os.path.join('groups',group,image+'.json')
@@ -160,13 +160,15 @@ with open(sys.argv[1]) as f:
                 print('BAD: {}'.format(csvId))
                 fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
                 trans=newtrans
-            elif '\\\\' in trans:
-                trans=trans.replace('\\\\','\\')
-            elif not corrected:
-                trans=trans.replace('\\','')
+            #elif '\\\\' in trans:
+            #    trans=trans.replace('\\\\','\\')
+            #elif not corrected:
+            #    trans=trans.replace('\\','')
             elif ' \\' in trans:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
+            else:
+                break
 
 
         while "\\" in trans:
@@ -177,7 +179,7 @@ with open(sys.argv[1]) as f:
                 trans=newtrans
             elif "S\\[" in trans and "]" in trans:
                 newtrans = trans.replace("S\\[","«")
-                newtrans=newtrans.replace("]","»")trans=trans.replace('\\','')
+                newtrans=newtrans.replace("]","»")
                 #print('Fix strikethrough: {} -> {}'.format(trans,newtrans))
                 trans=newtrans
             elif "s\\[" in trans and "]" in trans:
@@ -199,9 +201,12 @@ with open(sys.argv[1]) as f:
                 #print('Fix empty: {} -> {}'.format(trans,newtrans))
                 trans=newtrans
             elif "\\bad" in trans:
-                print('BAD: {}'.format(csvId))
-                fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
-                trans=newtrans
+                if bbId in fieldsById:
+                    print('BAD: {}'.format(csvId))
+                    fieldsById[bbId],newtrans=fixBox(fieldsById[bbId],group,image)
+                    trans=newtrans
+                else:
+                    trans=''
             elif '\\\\' in trans:
                 trans=trans.replace('\\\\','\\')
             elif not corrected:
@@ -209,6 +214,8 @@ with open(sys.argv[1]) as f:
             elif ' \\' in trans:
                 print('Unknown case: {}'.format(trans))
                 trans = input('Correct: ')
+            else:
+                break
             #otherwise assuming it's a newline marker
         if bbId[0]=='f' and bbId in json_data['transcriptions'] and json_data['transcriptions'][bbId]!=trans:
             if not corrected:
@@ -224,6 +231,9 @@ with open(sys.argv[1]) as f:
                     trans = input('Enter correct: ')
         elif not corrected and bbId in json_data['transcriptions']:
             continue
+
+        if no_strikethrough:
+            trans = trans.replace('«','').replace('»','')
 
         json_data['transcriptions'][bbId]=trans
         #print('{} : {}'.format(bbId,trans))
