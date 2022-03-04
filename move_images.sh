@@ -403,7 +403,6 @@ mv /tmp/labeled_images/007182398_00028.jpg groups/154/
 mv /tmp/labeled_images/007182398_00039.jpg groups/154/
 mv /tmp/labeled_images/007182398_00071.jpg groups/154/
 mv /tmp/labeled_images/007182398_00032.jpg groups/154_1/
-mv /tmp/labeled_images/007182398_00039.jpg groups/154_1/
 mv /tmp/labeled_images/007182398_00043.jpg groups/154_1/
 mv /tmp/labeled_images/007182398_00047.jpg groups/154_1/
 mv /tmp/labeled_images/007182398_00059.jpg groups/154_1/
