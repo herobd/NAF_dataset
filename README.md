@@ -1,5 +1,9 @@
 # National Archives Forms Dataset
 
+VERSION 3
+* Printed text transcriptions added. These are from Tesseract. The test/valid set ones were hand corrected, but the train set was only hand corrected a little. They aren't very good results.
+* A few more corrections
+
 VERSION 2
 * Corrections to various annotation errors.
 * Test/Valid transcption added
