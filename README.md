@@ -17,6 +17,8 @@ This was released (v1) in conjunction with the paper "Deep Visual Template-Free 
 
 Version 2 was used for "Visual FUDGE: Form Understanding via Graph Editing" http://arxiv.org/abs/2105.08194 (just the corrections, not the transcriptions).
 
+Version 3 was used for "End-to-end Document Recognition and Understanding with Dessurt" https://arxiv.org/abs/2203.16618
+
 
 ![Annotated image from dataset](/ex_images/ex_dataset.png)
 
